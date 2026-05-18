@@ -1,0 +1,38 @@
+/gestao-provedor/
+├── api/                        # Camada Backend (Lógica)
+│   ├── auth_jwt.php            # (Vinicius)
+│   ├── clientes_endpoint.php   # (Ana Júlia)
+│   ├── planos_endpoint.php     # (Ana Júlia)
+│   ├── contratos_endpoint.php  # (Ana Júlia)
+│   ├── usuarios_endpoint.php   # (Ana Júlia)
+│   ├── chamados_controller.php # (Vinicius)
+│   ├── analise_estatistica.php # (Ana Júlia)
+│   ├── filtros_dados.php       # (Dione)
+│   ├── exportacao_relatorios.php # (Dione)
+│   ├── validacoes_erros.php    # (Vinicius)
+│   └── config_api.php          # (Dione)
+|------------------------------------------------------------------
+├── assets/                     # Recursos Estáticos
+│   ├── css/
+│   │   └── estilos_globais.css # (Dione)
+│   └── js/
+│       └── graficos.js         # (Dione)
+|------------------------------------------------------------------
+├── database/                   # Persistência (SQL e Docs)
+│   ├── der_isp.png             # (Flaviane)
+│   ├── create_schema.sql       # (Flaviane)
+│   ├── procedures_views.sql    # (Flaviane)
+│   └── seguranca_backup.sql    # (Flaviane)
+|------------------------------------------------------------------
+├── views/                      # Camada Frontend (Apresentação)
+│   ├── login.php               # (Laura)
+│   ├── painel_principal.php    # (Laura)
+│   ├── clientes_gestao.php     # (Laura)
+│   ├── planos_contratos.php    # (Laura)
+│   ├── chamados_suporte.php    # (Laura)
+│   ├── usuarios_gestao.php	    # (Laura)
+│   └── dashboard_relatorios.php # (Dione)
+|-------------------------------------------------------------------
+├── config.php                  # Parâmetros de Conexão Geral
+└── index.php # Inicializador do Sistema (Dione)
+
