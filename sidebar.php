@@ -1,3 +1,15 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inclusion Network - Gestão de Provedores e Inclusão Digital</title>
+    <!-- Ícones FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Arquivo de Estilos Externo -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
  <!-- MÁSCARA DE FUNDO PARA O MENU MOBILE -->
     <div class="overlay" id="overlay"></div>
 
@@ -60,3 +72,4 @@
             </div>
         </div>
     </aside>
+</body>
