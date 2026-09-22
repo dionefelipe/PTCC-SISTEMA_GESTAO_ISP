@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ConectaSocial</title>
+    <!-- Ícones FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Arquivo de Estilos Externo -->
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- CABEÇALHO COM LOGO -->
+        <div class="login-header">
+            <div class="logo">
+                <i class="fa-solid fa-wifi"></i>
+                <span>ConectaSocial</span>
+            </div>
+            <p>Sistema de Gestão para Provedores & Inclusão Digital</p>
+        </div>
+
+        <!-- FORMULÁRIO DE LOGIN -->
+        <form id="loginForm" class="login-form">
+            
+            <!-- TIPO DE PERFIL/USUÁRIO -->
+            <div class="form-group">
+                <label for="tipoUsuario">Perfil de Acesso</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user-gear input-icon"></i>
+                    <select id="tipoUsuario" required>
+                        <option value="" disabled selected>Selecione seu perfil</option>
+                        <option value="GESTOR">Gestor de Provedor</option>
+                        <option value="TECNICO">Equipe Técnica</option>
+                        <option value="CLIENTE">Cliente / Morador</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- E-MAIL -->
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope input-icon"></i>
+                    <input type="email" id="email" placeholder="Digite seu e-mail" required>
+                </div>
+            </div>
+
+            <!-- SENHA -->
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+                    <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
+                </div>
+            </div>
+
+            <!-- OPÇÕES ADICIONAIS -->
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <span>Lembrar de mim</span>
+                </label>
+                <a href="#" class="forgot-password" id="forgotPasswordBtn">Esqueceu a senha?</a>
+            </div>
+
+            <!-- BOTÃO ENTRAR -->
+            <button type="submit" class="btn-submit">
+                <span>Entrar no Sistema</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <!-- RODAPÉ -->
+        <div class="login-footer">
+            <p>Promovendo conectividade e inclusão digital nas comunidades.</p>
+        </div>
+    </div>
+
+    <!-- Arquivo do JavaScript Externo -->
+    <script src="assets/js/login.js"></script>
+</body>
+</html>

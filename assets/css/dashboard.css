@@ -1,0 +1,118 @@
+/* Reseta margens e garante cálculo correto de tamanhos */
+* {
+    box-sizing: border-box !important;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    min-height: 100vh;
+    background-color: #f4f7f6 !important;
+    color: #333 !important;
+}
+
+/* Sidebar Fixa */
+#sidebar {
+    width: 260px !important;
+    min-width: 260px !important;
+    background: #2c3e50 !important;
+    color: white !important;
+    height: 100vh !important;
+    padding: 20px !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+#sidebar a {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Área Principal */
+#main-content {
+    margin-left: 260px !important; /* Espaço exato da sidebar */
+    width: calc(100% - 260px) !important;
+    padding: 30px !important;
+    flex-grow: 1;
+}
+
+/* Cards (Anula os estilos conflitantes do W3.CSS) */
+.card {
+    background: white !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 30px !important;
+    border: none !important;
+}
+
+/* Indicadores de Topo */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 20px !important;
+    margin-bottom: 30px !important;
+}
+
+.stat-item {
+    background: #3498db !important;
+    color: white !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+}
+
+/* Ajuste do Mapa Leaflet */
+#mapa {
+    height: 450px !important;
+    width: 100% !important;
+    border-radius: 8px !important;
+    border: 1px solid #ddd !important;
+}
+
+/* Tabelas */
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 15px !important;
+}
+
+th, td {
+    border: 1px solid #eee !important;
+    padding: 12px !important;
+    text-align: left !important;
+}
+
+th {
+    background-color: #f8f9fa !important;
+    color: #2c3e50 !important;
+}
+
+.prioridade-alta {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+}
+
+button {
+    background-color: #27ae60 !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    margin-bottom: 10px !important;
+}
+
+button:hover {
+    background-color: #219150 !important;
+}
+
+hr {
+    border: 0 !important;
+    border-top: 1px solid #555 !important;
+    margin: 20px 0 !important;
+}
