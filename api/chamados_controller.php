@@ -1,240 +1,138 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| DOCUMENTAÇÃO DE INTEGRAÇÃO DA API (CHAMADOS)
-|--------------------------------------------------------------------------
-| Este bloco define o contrato de dados entre este Controller e o Front-end.
-| Qualquer alteração nestes campos deve ser comunicada à equipe.
-|
-| 1. MÉTODOS GET (LISTAGEM):
-| - Parâmetro URL: 'regiao' (Ex: listar_chamados.php?regiao=1)
-| - Retorno esperado: JSON com array de objetos:
-|   ['id_chamados', 'descricao', 'status', 'nome' (região), 'prioridade']
-|
-| 2. MÉTODO POST (CRIAR CHAMADO):
-| - Payload esperado (JSON):
-|   {
-|     "descricao": "string",
-|     "id_local": int 
-|   }
-|
-| 3. MÉTODO PUT (ATUALIZAR):
-| - Payload esperado (JSON):
-|   {
-|     "id_chamado": int,
-|     "novo_status": "string",
-|     "responsavel": "string",
-|     "solucao": "string" (Obrigatório se novo_status == 'Resolvido')
-|   }
-|
-| NOTA: O campo 'id_local' é a chave estrangeira padrão para regiões.
-|--------------------------------------------------------------------------
-*/
+declare(strict_types=1);
 
-// --- 1. CONFIGURAÇÃO INICIAL E SEGURANÇA (A PORTARIA) ---
-// Define que todas as respostas desta página serão no formato JSON
-header("Content-type: application/json");
+require_once __DIR__ . '/helpers.php';
 
-// Importa o arquivo que faz a conexão com o banco de dados
-require '../config.php'; 
-// Importa o arquivo responsável por verificar tokens de acesso (JWT)
-require 'auth_jwt.php'; 
+$boot = api_boot(true);
+$pdo = $boot['pdo'];
+$usuario = $boot['usuario'];
+$metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$perfil = perfil_usuario($usuario);
 
-// Executa a função de validação. Se o usuário não tiver um token válido, 
-// o script para aqui mesmo e ele não acessa os chamados.
-$token_decodificado = validarToken(); 
-
-// --- 2. ROTEAMENTO DE AÇÕES ---
-// Descobre qual método HTTP o Front-end enviou (GET, POST ou PUT)
-$metodo = $_SERVER['REQUEST_METHOD'];
-
-// O 'switch' atua como um trilho de trem, direcionando o código com base no método escolhido
 switch ($metodo) {
-
-    // ==========================================
-    // ROTA GET: LER/LISTAR OS CHAMADOS
-    // ==========================================
     case 'GET':
         try {
-            // Prepara a consulta base: busca os chamados e cruza com a tabela de regiões 
-            // para trazer o nome da região e sua prioridade.
-            $sql = "SELECT 
-                        chamados.id_chamados, 
-                        chamados.descricao, 
-                        chamados.status, 
-                        regioes.nome, 
-                        regioes.prioridade 
-                    FROM chamados 
-                    INNER JOIN regioes ON chamados.id_local = regioes.id_regiao";
+            $sql = "SELECT
+                        c.id_chamados,
+                        c.descricao,
+                        c.status,
+                        c.solucao,
+                        c.responsavel,
+                        c.id_tecnico,
+                        c.id_local,
+                        c.cliente,
+                        c.data,
+                        r.nome AS regiao_nome,
+                        r.prioridade,
+                        u.nome AS cliente_nome,
+                        u.latitude,
+                        u.longitude,
+                        t.nome AS tecnico_nome
+                    FROM chamados c
+                    LEFT JOIN regioes r ON c.id_local = r.id_regiao
+                    LEFT JOIN usuarios u ON c.cliente = u.id
+                    LEFT JOIN usuarios t ON c.id_tecnico = t.id
+                    WHERE 1=1";
+            $params = [];
 
-            // FILTRO DINÂMICO: Se o usuário enviou '?regiao=X' na URL e não está vazio...
-            if (isset($_GET['regiao']) && !empty($_GET['regiao'])) {
-                // ...adiciona uma restrição (WHERE) para buscar só daquela região específica
-                $sql .= " WHERE chamados.id_local = :regiao"; 
+            if ($perfil === 'CLIENTE') {
+                $sql .= ' AND c.cliente = :uid';
+                $params['uid'] = (int) $usuario->uid;
             }
 
-            // ORDENAÇÃO INTELIGENTE: Organiza os resultados primeiro pela prioridade (urgência) 
-            // e depois pelos chamados mais recentes.
-            $sql .= " ORDER BY regioes.prioridade ASC, chamados.data DESC";
+            if (!empty($_GET['regiao'])) {
+                $sql .= ' AND c.id_local = :regiao';
+                $params['regiao'] = (int) $_GET['regiao'];
+            }
 
-            // Prepara o SQL no banco para evitar ataques (SQL Injection)
+            if (!empty($_GET['status'])) {
+                $sql .= ' AND c.status = :status';
+                $params['status'] = (string) $_GET['status'];
+            }
+
+            $sql .= ' ORDER BY COALESCE(r.prioridade, 99) ASC, c.data DESC';
             $stmt = $pdo->prepare($sql);
-
-            // Se o filtro de região foi ativado, vincula o número da região com segurança
-            if (isset($_GET['regiao']) && !empty($_GET['regiao'])) {
-                $stmt->bindValue(":regiao", $_GET['regiao']);
-            }
-
-            // Executa a busca
-            $stmt->execute();
-            // Transforma o resultado do banco em um array (lista) do PHP
-            $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Responde com sucesso (200 OK) e entrega a lista em formato JSON
-            http_response_code(200);
-            echo json_encode($resultado);
-
-        } catch(Exception $e) {
-            // Se o banco falhar, devolve um erro seguro (500) sem quebrar o sistema
-            http_response_code(500);
-            echo json_encode(["ERRO!", "motivo" => $e->getMessage()]);
+            $stmt->execute($params);
+            json_out($stmt->fetchAll());
+        } catch (Throwable $e) {
+            json_out(['erro' => 'Falha ao listar chamados.'], 500);
         }
         break;
 
-
-    // ==========================================
-    // ROTA POST: CRIAR UM NOVO CHAMADO
-    // ==========================================
     case 'POST':
-        // Lê os dados JSON enviados pelo usuário no corpo da requisição
-        $json = file_get_contents("php://input");
-        $dados = json_decode($json, true);
+        exigirPerfil(['CLIENTE', 'GESTOR'], $usuario);
+        $dados = json_input();
 
-        // VALIDAÇÃO DE ENTRADA: Confere se os campos obrigatórios foram enviados
-        if (!isset($dados["descricao"]) || !isset($dados["id_local"])) { 
-            http_response_code(400); // 400 = Dados enviados pelo usuário estão incorretos
-            echo json_encode(["Erro" => "Por Favor, descreva o problema ou um id valido"]);
-            exit; // Interrompe o processo
+        if (empty($dados['descricao']) || empty($dados['id_local'])) {
+            json_out(['erro' => 'Informe a descrição e a região do chamado.'], 400);
         }
 
-        // Prepara as informações que serão salvas
-        $id_cliente = $token_decodificado->uid; // Pega o ID de quem está logado diretamente do token
-        $descricao = $dados["descricao"];
-        $status = "Aberto"; // Todo chamado novo nasce como "Aberto"
-        $verificar_idRegiao = $dados["id_local"];
-
-        // INTEGRIDADE REFERENCIAL: Verifica se a região enviada realmente existe no banco
-        $stmt = $pdo->prepare("SELECT id_regiao FROM regioes WHERE id_regiao = :id");
-        $stmt->bindValue(":id", $verificar_idRegiao);
-        $stmt->execute();
-
-        $regiao_valida = $stmt->fetch();
-        // Se o banco não achar a região, bloqueia a criação do chamado
-        if (!$regiao_valida){
-            http_response_code(400);
-            echo json_encode("erro!");
-            exit;
+        $stmt = $pdo->prepare('SELECT id_regiao FROM regioes WHERE id_regiao = :id');
+        $stmt->execute(['id' => $dados['id_local']]);
+        if (!$stmt->fetch()) {
+            json_out(['erro' => 'Região inválida.'], 400);
         }
 
-        // SALVANDO NO BANCO: Processo de inserção do novo chamado
-        try {
-            $sql = "INSERT INTO chamados (cliente, descricao, status, id_local) VALUES (:id_cliente, :descricao, :status, :local)";
-            $stmt = $pdo->prepare($sql);
+        $clienteId = $perfil === 'GESTOR' && !empty($dados['cliente'])
+            ? (int) $dados['cliente']
+            : (int) $usuario->uid;
 
-            // Insere os dados de forma segura (prevenindo ataques)
-            $stmt->bindValue(":id_cliente", $id_cliente);
-            $stmt->bindValue(":descricao", $descricao);
-            $stmt->bindValue(":status", $status);
-            $stmt->bindValue(":local", $verificar_idRegiao);
+        $stmt = $pdo->prepare(
+            'INSERT INTO chamados (cliente, descricao, status, id_local)
+             VALUES (:cliente, :descricao, :status, :local)'
+        );
+        $stmt->execute([
+            'cliente' => $clienteId,
+            'descricao' => trim((string) $dados['descricao']),
+            'status' => 'Aberto',
+            'local' => (int) $dados['id_local'],
+        ]);
 
-            $stmt->execute();
-
-            // Responde com sucesso (201 Criado)
-            http_response_code(201);
-            echo json_encode(["mensagem" => "Chamado Aberto com sucesso!"]);
-            
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(["erro" => "Falha ao salvar no banco"]);
-            exit;
-        }
+        json_out(['mensagem' => 'Chamado aberto com sucesso!'], 201);
         break;
 
-
-    // ==========================================
-    // ROTA PUT: ATUALIZAR UM CHAMADO EXISTENTE
-    // ==========================================
     case 'PUT':
-        // Lê os dados JSON enviados
-        $json = file_get_contents("php://input");
-        $dados = json_decode($json, true);
+        exigirPerfil(['TECNICO', 'GESTOR'], $usuario);
+        $dados = json_input();
 
-        // 1. VALIDAÇÃO BÁSICA: Todos estes campos são obrigatórios para atualizar
-        if (!isset($dados["id_chamado"]) || !isset($dados["novo_status"]) || !isset($dados["responsavel"])) {
-            http_response_code(400);
-            echo json_encode(["erro" => "Por favor, preencha todos os campos."]);
-            exit;
+        if (empty($dados['id_chamado']) || empty($dados['novo_status'])) {
+            json_out(['erro' => 'Informe o chamado e o novo status.'], 400);
         }
 
-        // 2. REGRA DE NEGÓCIO: Se o técnico disser que o status é "Resolvido", 
-        // ele é OBRIGADO a escrever qual foi a solução do problema.
-        if ($dados["novo_status"] == "Resolvido" && empty($dados["solucao"])) {
-            http_response_code(400);
-            echo json_encode(["erro" => "Por favor, preencha a solucao do problema."]);
-            exit;
+        $status = (string) $dados['novo_status'];
+        if (in_array($status, ['Resolvido', 'Finalizado'], true) && empty($dados['solucao'])) {
+            json_out(['erro' => 'Para finalizar o chamado, descreva a solução.'], 400);
         }
 
-        // 3. INTEGRIDADE REFERENCIAL: Verifica se o ID do chamado enviado realmente existe
-        $stmt = $pdo->prepare("SELECT id_chamados FROM chamados WHERE id_chamados = :id");
-        $stmt->bindValue(":id", $dados["id_chamado"]);
-        $stmt->execute();
-
-        $chamado_valido = $stmt->fetch();
-        // Se o chamado não existir, avisa e para a execução
-        if (!$chamado_valido){
-            http_response_code(400);
-            echo json_encode(["erro!"=> "chamado inexistente, digite um id valido!"]);
-            exit;
+        $stmt = $pdo->prepare('SELECT id_chamados FROM chamados WHERE id_chamados = :id');
+        $stmt->execute(['id' => $dados['id_chamado']]);
+        if (!$stmt->fetch()) {
+            json_out(['erro' => 'Chamado inexistente.'], 400);
         }
 
-        // Prepara as informações validadas
-        $solucao = isset($dados["solucao"]) ? $dados["solucao"] : null; // Solução pode ser nula se não for resolvido
-        $id_chamado = $dados["id_chamado"];
-        $status = $dados["novo_status"];
-        $responsavel = $dados["responsavel"];
+        $responsavel = $dados['responsavel'] ?? ($usuario->nome ?? 'Técnico');
+        $idTecnico = $perfil === 'TECNICO' ? (int) $usuario->uid : ($dados['id_tecnico'] ?? null);
 
-        // SALVANDO A ATUALIZAÇÃO NO BANCO
-        try {
-            $sql = "UPDATE chamados SET status = :novo_status, solucao = :solucao, responsavel = :responsavel  WHERE id_chamados = :id_chamado";
-            $stmt = $pdo->prepare($sql);
+        $stmt = $pdo->prepare(
+            'UPDATE chamados
+             SET status = :status,
+                 solucao = :solucao,
+                 responsavel = :responsavel,
+                 id_tecnico = :tecnico
+             WHERE id_chamados = :id'
+        );
+        $stmt->execute([
+            'status' => $status,
+            'solucao' => $dados['solucao'] ?? null,
+            'responsavel' => $responsavel,
+            'tecnico' => $idTecnico,
+            'id' => (int) $dados['id_chamado'],
+        ]);
 
-            $stmt->bindValue(":id_chamado", $id_chamado);
-            $stmt->bindValue(":solucao", $solucao);
-            $stmt->bindValue(":novo_status", $status);
-            $stmt->bindValue(":responsavel", $responsavel);
-
-            $stmt->execute();
-
-            // Retorno de sucesso (200 OK)
-            http_response_code(200);
-            echo json_encode(["mensagem" => "Atualizacao feita com sucesso!"]);
-            
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(["erro" => "Falha na atualizacao", "motivo" => $e->getMessage()]);
-            exit;
-        }
+        json_out(['mensagem' => 'Chamado atualizado com sucesso.']);
         break;
 
-
-    // ==========================================
-    // ROTA PADRÃO (SEGURANÇA CONTRA OUTROS MÉTODOS)
-    // ==========================================
     default:
-        // Se o usuário tentar acessar com um método não programado (ex: DELETE), 
-        // o sistema bloqueia e retorna erro 405 (Método Não Permitido).
-        http_response_code(405); 
-        echo json_encode(["erro" => "Metodo HTTP nao suportado para esta rota."]);
-        break;
+        json_out(['erro' => 'Método HTTP não suportado.'], 405);
 }

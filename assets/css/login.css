@@ -14,8 +14,12 @@
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-body {
-    background-color: var(--bg-color);
+body,
+body.login-body {
+    background:
+        radial-gradient(circle at top left, #dbeafe, transparent 40%),
+        radial-gradient(circle at bottom right, #ccfbf1, transparent 42%),
+        var(--bg-color);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
@@ -178,6 +182,21 @@ body {
     background-color: #172554;
 }
 
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.login-footer a {
+    color: var(--secondary-color);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
 /* RODAPÉ DO CARD */
 .login-footer {
     margin-top: 2rem;
@@ -189,4 +208,11 @@ body {
 .login-footer p {
     font-size: 0.75rem;
     color: var(--text-light);
+}
+
+.login-feedback {
+    color: #b91c1c;
+    font-size: 0.88rem;
+    min-height: 1.2rem;
+    font-weight: 600;
 }

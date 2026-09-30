@@ -4,41 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ConectaSocial</title>
-    <!-- Ícones FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Arquivo de Estilos Externo -->
     <link rel="stylesheet" href="assets/css/login.css">
 </head>
-<body>
+<body class="login-body">
 
     <div class="login-container">
-        <!-- CABEÇALHO COM LOGO -->
         <div class="login-header">
             <div class="logo">
                 <i class="fa-solid fa-wifi"></i>
                 <span>ConectaSocial</span>
             </div>
-            <p>Sistema de Gestão para Provedores & Inclusão Digital</p>
+            <p>Gestão para provedores, equipe técnica e clientes</p>
         </div>
 
-        <!-- FORMULÁRIO DE LOGIN -->
         <form id="loginForm" class="login-form">
-            
-            <!-- TIPO DE PERFIL/USUÁRIO -->
             <div class="form-group">
-                <label for="tipoUsuario">Perfil de Acesso</label>
+                <label for="tipoUsuario">Perfil de acesso</label>
                 <div class="input-wrapper">
                     <i class="fa-solid fa-user-gear input-icon"></i>
                     <select id="tipoUsuario" required>
                         <option value="" disabled selected>Selecione seu perfil</option>
-                        <option value="GESTOR">Gestor de Provedor</option>
-                        <option value="TECNICO">Equipe Técnica</option>
-                        <option value="CLIENTE">Cliente / Morador</option>
+                        <option value="GESTOR">Provedor</option>
+                        <option value="TECNICO">Técnico</option>
+                        <option value="CLIENTE">Cliente</option>
                     </select>
                 </div>
             </div>
 
-            <!-- E-MAIL -->
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <div class="input-wrapper">
@@ -47,7 +40,6 @@
                 </div>
             </div>
 
-            <!-- SENHA -->
             <div class="form-group">
                 <label for="senha">Senha</label>
                 <div class="input-wrapper">
@@ -57,7 +49,6 @@
                 </div>
             </div>
 
-            <!-- OPÇÕES ADICIONAIS -->
             <div class="form-options">
                 <label class="remember-me">
                     <input type="checkbox" id="remember">
@@ -66,20 +57,20 @@
                 <a href="#" class="forgot-password" id="forgotPasswordBtn">Esqueceu a senha?</a>
             </div>
 
-            <!-- BOTÃO ENTRAR -->
+            <p id="loginFeedback" class="login-feedback" role="alert"></p>
+
             <button type="submit" class="btn-submit">
-                <span>Entrar no Sistema</span>
+                <span>Entrar no sistema</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </button>
         </form>
 
-        <!-- RODAPÉ -->
         <div class="login-footer">
-            <p>Promovendo conectividade e inclusão digital nas comunidades.</p>
+            <p>Ainda não tem conta de cliente? <a href="views/cadastro.php">Criar cadastro</a></p>
+            <p class="muted" style="margin-top:8px">Demonstração: admin@conectasocial.com, tecnico@conectasocial.com ou cliente@conectasocial.com — senha 123456</p>
         </div>
     </div>
 
-    <!-- Arquivo do JavaScript Externo -->
     <script src="assets/js/login.js"></script>
 </body>
 </html>

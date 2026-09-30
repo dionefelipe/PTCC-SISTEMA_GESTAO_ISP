@@ -1,46 +1,53 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
-    const senhaInput = document.getElementById('senha');
-    const togglePasswordBtn = document.getElementById('togglePassword');
-    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    const feedback = document.getElementById('loginFeedback');
 
-    // Alternar visibilidade da senha (Mostrar/Ocultar)
-    if (togglePasswordBtn && senhaInput) {
-        togglePasswordBtn.addEventListener('click', () => {
-            const isPassword = senhaInput.getAttribute('type') === 'password';
-            senhaInput.setAttribute('type', isPassword ? 'text' : 'password');
-            
-            togglePasswordBtn.classList.toggle('fa-eye');
-            togglePasswordBtn.classList.toggle('fa-eye-slash');
-        });
-    }
+    document.getElementById('forgotPasswordBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Para redefinir a senha, entre em contato com o provedor responsável pela sua conta.');
+    });
 
-    // Submissão do Formulário de Login
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+    const togglePassword = document.getElementById('togglePassword');
+    const inputSenha = document.getElementById('senha');
+    togglePassword?.addEventListener('click', () => {
+        const tipo = inputSenha.getAttribute('type') === 'password' ? 'text' : 'password';
+        inputSenha.setAttribute('type', tipo);
+        togglePassword.classList.toggle('fa-eye-slash');
+    });
 
-            const tipoUsuario = document.getElementById('tipoUsuario').value;
-            const email = document.getElementById('email').value;
-            const senha = senhaInput.value;
+    loginForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const botao = loginForm.querySelector('.btn-submit');
+        botao.disabled = true;
+        if (feedback) feedback.textContent = '';
 
-            // Simulação de login
-            console.log('Dados do Login:', { tipoUsuario, email, senha });
-            alert(`Acesso realizado com sucesso como: ${tipoUsuario}`);
-            
-            // Redirecionamento para a página inicial (index.html)
+        const payload = {
+            tipoUsuario: document.getElementById('tipoUsuario').value,
+            email: document.getElementById('email').value,
+            senha: document.getElementById('senha').value,
+        };
+
+        try {
+            const resposta = await fetch('./api/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const dados = await resposta.json();
+            if (!resposta.ok) throw new Error(dados.erro || 'Erro ao realizar login.');
+
+            localStorage.setItem('token_acesso', dados.token);
+            localStorage.setItem('perfil_usuario', dados.perfil);
+            localStorage.setItem('nome_usuario', dados.nome || '');
             window.location.href = 'index.php';
-        });
-    }
-
-    // Ação do link "Esqueceu a Senha"
-    if (forgotPasswordBtn) {
-        forgotPasswordBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = prompt('Digite seu e-mail cadastrado para redefinição de senha:');
-            if (email) {
-                alert(`Instruções de recuperação de senha foram enviadas para: ${email}`);
+        } catch (erro) {
+            if (feedback) {
+                feedback.textContent = erro.message;
+            } else {
+                alert(erro.message);
             }
-        });
-    }
+        } finally {
+            botao.disabled = false;
+        }
+    });
 });

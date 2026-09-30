@@ -1,75 +1,101 @@
- <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inclusion Network - Gestão de Provedores e Inclusão Digital</title>
-    <!-- Ícones FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Arquivo de Estilos Externo -->
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
- <!-- MÁSCARA DE FUNDO PARA O MENU MOBILE -->
-    <div class="overlay" id="overlay"></div>
+<?php
 
-    <!-- NAVEGAÇÃO ESTILO SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-        <!-- LOGO DO SISTEMA -->
-        <div class="sidebar-header">
-            <div class="logo">
-                <i class="fa-solid fa-wifi"></i>
-                <span>Inclusion Network</span>
-            </div>
-        </div>
+declare(strict_types=1);
 
-        <!-- LISTA DE JANELAS/FUNCIONALIDADES DO PROJETO -->
+require_once __DIR__ . '/includes/paths.php';
+
+$activeNav = $activeNav ?? '';
+?>
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a class="logo" href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>index.php">
+            <i class="fa-solid fa-wifi"></i>
+            <span>ConectaSocial</span>
+        </a>
+    </div>
+
+    <nav>
         <ul class="nav-list">
-            <li class="nav-item">
-                <a href="#" class="nav-link active">
+            <li class="nav-item" data-roles="GESTOR,TECNICO,CLIENTE">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>index.php"
+                   class="nav-link <?= $activeNav === 'dashboard' ? 'active' : '' ?>"
+                   data-nav="dashboard">
                     <i class="fa-solid fa-chart-line"></i>
-                    <span>Dashboard Redes</span>
+                    <span>Dashboard</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Clientes e Contratos</span>
+            <li class="nav-item" data-roles="CLIENTE">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/meu-plano.php"
+                   class="nav-link <?= $activeNav === 'meu-plano' ? 'active' : '' ?>"
+                   data-nav="meu-plano">
+                    <i class="fa-solid fa-id-card"></i>
+                    <span>Meu plano</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-headset"></i>
-                    <span>Chamados Técnicos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="views/dashboard.php" class="nav-link">
-                    <i class="fa-solid fa-map-location-dot"></i>
-                    <span>Mapeamento de Cobertura</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
+            <li class="nav-item" data-roles="GESTOR,CLIENTE">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/planos.php"
+                   class="nav-link <?= $activeNav === 'planos' ? 'active' : '' ?>"
+                   data-nav="planos">
                     <i class="fa-solid fa-box-open"></i>
-                    <span>Planos de Internet</span>
+                    <span>Planos de internet</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-file-invoice"></i>
-                    <span>Relatórios Sociais</span>
+            <li class="nav-item" data-roles="GESTOR,TECNICO,CLIENTE">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/chamados.php"
+                   class="nav-link <?= $activeNav === 'chamados' ? 'active' : '' ?>"
+                   data-nav="chamados">
+                    <i class="fa-solid fa-headset"></i>
+                    <span>Chamados</span>
+                </a>
+            </li>
+            <li class="nav-item" data-roles="TECNICO">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/rota.php"
+                   class="nav-link <?= $activeNav === 'rota' ? 'active' : '' ?>"
+                   data-nav="rota">
+                    <i class="fa-solid fa-route"></i>
+                    <span>Rota de trabalho</span>
+                </a>
+            </li>
+            <li class="nav-item" data-roles="GESTOR">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/tecnicos.php"
+                   class="nav-link <?= $activeNav === 'tecnicos' ? 'active' : '' ?>"
+                   data-nav="tecnicos">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Gerenciar técnicos</span>
+                </a>
+            </li>
+            <li class="nav-item" data-roles="GESTOR">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/areas.php"
+                   class="nav-link <?= $activeNav === 'areas' ? 'active' : '' ?>"
+                   data-nav="areas">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Áreas atendidas</span>
+                </a>
+            </li>
+            <li class="nav-item" data-roles="GESTOR">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/clientes.php"
+                   class="nav-link <?= $activeNav === 'clientes' ? 'active' : '' ?>"
+                   data-nav="clientes">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+            </li>
+            <li class="nav-item" data-roles="GESTOR">
+                <a href="<?= htmlspecialchars($BASE, ENT_QUOTES, 'UTF-8') ?>views/relatorios.php"
+                   class="nav-link <?= $activeNav === 'relatorios' ? 'active' : '' ?>"
+                   data-nav="relatorios">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span>Relatórios</span>
                 </a>
             </li>
         </ul>
+    </nav>
 
-        <!-- PERFIL DO USUÁRIO LOGADO -->
-        <div class="user-profile">
-            <div class="avatar">G</div>
-            <div class="user-info">
-                <div class="name">Gestor de Provedor</div>
-                <div class="role">Admin / Sistema</div>
-            </div>
+    <div class="user-profile">
+        <div class="avatar" id="userAvatar">?</div>
+        <div class="user-info">
+            <div class="name" id="userName">Carregando...</div>
+            <div class="role" id="userRole">—</div>
         </div>
-    </aside>
-</body>
+    </div>
+</aside>

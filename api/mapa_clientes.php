@@ -1,15 +1,24 @@
 <?php
-include_once '../config.php'; // Sua conexão PDO
 
-header('Content-Type: application/json');
+declare(strict_types=1);
+
+require_once __DIR__ . '/helpers.php';
+
+$boot = api_boot(true);
+$pdo = $boot['pdo'];
+$usuario = $boot['usuario'];
+exigirPerfil(['GESTOR', 'TECNICO'], $usuario);
 
 try {
-    // Busca apenas usuários com coordenadas preenchidas (conforme o script SQL que atualizamos)
-    $stmt = $pdo->query("SELECT nome, latitude, longitude, cep FROM usuarios WHERE latitude IS NOT NULL");
-    $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    echo json_encode($clientes);
-} catch (Exception $e) {
-    echo json_encode(["error" => $e->getMessage()]);
+    $stmt = $pdo->query(
+        "SELECT u.id, u.nome, u.latitude, u.longitude, u.cep, r.nome AS regiao
+         FROM usuarios u
+         LEFT JOIN regioes r ON r.id_regiao = u.id_regiao
+         WHERE u.perfil = 'CLIENTE'
+           AND u.latitude IS NOT NULL
+           AND u.longitude IS NOT NULL"
+    );
+    json_out($stmt->fetchAll());
+} catch (Throwable $e) {
+    json_out(['erro' => 'Erro ao carregar clientes.'], 500);
 }
-?>
